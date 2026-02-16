@@ -1,0 +1,14 @@
+PIPELINE DE PREDICCIÓN - CREDIT & DEBIT MEMOS
+===============================================
+
+A. Raw Data         → Datos transaccionales de SAP (pestaña Reference, 2023-2025).
+B. Data Validation  → Validar tipos, rangos y distribuciones antes de procesar.
+C. Data Cleaning    → Eliminar columnas innecesarias, castear tipos y tratar outliers.
+D. Enrichment       → Mapear SOrg a región y Dv a división. Eliminar SOrg tras el merge.
+E. Split por País   → Separar en USA (USD) y CAM (CAD) usando la región.
+F. Target Eng.      → Separar Net value en credit_net_value y debit_net_value según SaTy.
+G-H. Aggregation    → Agregar a nivel mensual: 1 fila = customer × region × division × mes.
+I. Features         → Crear lags (1,3,12), rolling means (3,6) y features categóricas.
+J-K. Model Select.  → Evaluar Lasso, LightGBM, XGBoost y CatBoost con walk-forward validation.
+L-P. Train & Forecast → Entrenar modelo ganador con todo el histórico y predecir enero 2026.
+Q. Reporting        → Unir resultados, rankear clientes y exportar para Finanzas.
