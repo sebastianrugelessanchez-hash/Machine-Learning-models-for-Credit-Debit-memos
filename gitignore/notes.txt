@@ -1,7 +1,0 @@
-Data bases/*.xlsx
-output/*.csv
-output/*.xlsx
-output/plots/*.png
-__pycache__/
-*.pyc
-.DS_Store
