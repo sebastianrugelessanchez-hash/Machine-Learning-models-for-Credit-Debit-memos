@@ -1,6 +1,6 @@
 # Credit & Debit Memos Forecasting Pipeline
 
-Predictive pipeline for Credit & Debit Memos using SAP transactional data (2023–2025). Forecasts memo volumes by customer for USA and Canada markets to support Finance planning.
+Predictive pipeline for Credit & Debit Memos using SAP transactional data (2022–2025). Forecasts memo volumes by customer for USA and Canada markets to support Finance planning.
 
 ## Project Structure
 
