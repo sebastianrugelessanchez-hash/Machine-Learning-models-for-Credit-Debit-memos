@@ -123,14 +123,14 @@ def enrich(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # =============================================================================
-# Paso E — Split por país
+# Paso E — Filtrar solo USA
 # =============================================================================
-def split_by_country(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
-    """Separa el dataset en USA y CAM según el stronghold."""
+def filter_usa(df: pd.DataFrame) -> pd.DataFrame:
+    """Filtra el dataset para conservar solo registros USA (US-ACM)."""
     usa = df[df["stronghold"] == "US-ACM"].copy()
-    cam = df[df["stronghold"].isin(["E-CAN", "W-CAN"])].copy()
-    print(f"  USA: {len(usa)} registros | CAM: {len(cam)} registros")
-    return {"USA": usa, "CAM": cam}
+    n_excluded = len(df) - len(usa)
+    print(f"  USA: {len(usa)} registros ({n_excluded} no-USA excluidos)")
+    return usa
 
 
 # =============================================================================
@@ -185,17 +185,16 @@ def run():
     print("\n[B-C-D] Validación, limpieza y enriquecimiento (por batch)")
     df = process_in_batches(df, BATCH_SIZE)
 
-    print("\n[E] Split por país")
-    datasets = split_by_country(df)
+    print("\n[E] Filtrar solo USA")
+    df = filter_usa(df)
 
     print("\n[F] Target engineering")
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-    for country, data in datasets.items():
-        data = engineer_targets(data)
-        output_path = os.path.join(OUTPUT_FOLDER, f"dataset_{country}.csv")
-        data.to_csv(output_path, index=False)
-        print(f"  {country}: {data.shape} → {output_path}")
-        print(f"    Columnas: {list(data.columns)}")
+    df = engineer_targets(df)
+    output_path = os.path.join(OUTPUT_FOLDER, "dataset_USA.csv")
+    df.to_csv(output_path, index=False)
+    print(f"  USA: {df.shape} → {output_path}")
+    print(f"    Columnas: {list(df.columns)}")
 
     print("\nPipeline A→F completado.")
 
