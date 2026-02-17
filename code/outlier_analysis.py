@@ -170,31 +170,31 @@ def plot_boxplots(df: pd.DataFrame, country: str):
 # Ejecución
 # =============================================================================
 def run():
-    for country in ["USA", "CAM"]:
-        print(f"\n{'='*60}")
-        print(f"  ANÁLISIS DE OUTLIERS — {country}")
-        print(f"{'='*60}")
+    country = "USA"
+    print(f"\n{'='*60}")
+    print(f"  ANÁLISIS DE OUTLIERS — {country}")
+    print(f"{'='*60}")
 
-        df = load_dataset(country)
+    df = load_dataset(country)
 
-        # --- Estadísticas IQR ---
-        print("\n[Estadísticas IQR]")
-        for col in TARGETS:
-            print_outlier_stats(df, col, country)
+    # --- Estadísticas IQR ---
+    print("\n[Estadísticas IQR]")
+    for col in TARGETS:
+        print_outlier_stats(df, col, country)
 
-        # --- Conteo Z-score consolidado ---
-        print("\n[Conteo por umbral Z-score — Consolidado]")
-        for col in TARGETS:
-            print_zscore_thresholds(df, col, country)
+    # --- Conteo Z-score consolidado ---
+    print("\n[Conteo por umbral Z-score — Consolidado]")
+    for col in TARGETS:
+        print_zscore_thresholds(df, col, country)
 
-        # --- Conteo Z-score por año ---
-        print("\n[Conteo por umbral Z-score — Por año]")
-        for col in TARGETS:
-            print_zscore_by_year(df, col, country)
+    # --- Conteo Z-score por año ---
+    print("\n[Conteo por umbral Z-score — Por año]")
+    for col in TARGETS:
+        print_zscore_by_year(df, col, country)
 
-        # --- Gráficos ---
-        print("\n[Gráficos]")
-        plot_boxplots(df, country)
+    # --- Gráficos ---
+    print("\n[Gráficos]")
+    plot_boxplots(df, country)
 
     print("\nAnálisis de outliers completado.")
 
