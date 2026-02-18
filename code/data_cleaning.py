@@ -1,23 +1,20 @@
-import os
 import math
 import numpy as np
 import pandas as pd
 from config import (
+    BATCH_SIZE,
     COLUMN_MAP,
     CREDIT_MEMO_TYPES,
+    DATA_FOLDER,
     DEBIT_MEMO_TYPES,
     DIVISION_MAP,
+    LEGACY_COLUMN_ALIASES,
+    OUTPUT_FOLDER,
+    SOURCE_SHEET,
+    USA_STRONGHOLD,
     get_division,
     load_stronghold_map,
 )
-
-# =============================================================================
-# Rutas y configuración
-# =============================================================================
-DATA_FOLDER = os.path.join(os.path.dirname(__file__), "..", "Data bases")
-OUTPUT_FOLDER = os.path.join(os.path.dirname(__file__), "..", "output")
-SOURCE_SHEET = "Reference"
-BATCH_SIZE = 20_000
 
 
 # =============================================================================
@@ -25,6 +22,8 @@ BATCH_SIZE = 20_000
 # =============================================================================
 def load_and_merge_sources(folder: str, sheet: str) -> pd.DataFrame:
     """Lee todos los .xlsx de la carpeta y concatena la pestaña indicada."""
+    import os
+
     frames = []
     for file in sorted(os.listdir(folder)):
         if not file.endswith(".xlsx") or file.startswith("~$"):
@@ -33,6 +32,9 @@ def load_and_merge_sources(folder: str, sheet: str) -> pd.DataFrame:
             continue
         path = os.path.join(folder, file)
         df = pd.read_excel(path, sheet_name=sheet)
+        for old_name, new_name in LEGACY_COLUMN_ALIASES.items():
+            if old_name in df.columns and new_name not in df.columns:
+                df = df.rename(columns={old_name: new_name})
         df["source_file"] = file
         frames.append(df)
         print(f"  Cargado: {file} → {len(df)} filas")
@@ -101,9 +103,8 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 # =============================================================================
 # Paso D — Enriquecimiento dimensional
 # =============================================================================
-def enrich(df: pd.DataFrame) -> pd.DataFrame:
+def enrich(df: pd.DataFrame, stronghold_map: pd.DataFrame) -> pd.DataFrame:
     """Merge con Stronghold info, mapea division código→nombre."""
-    stronghold_map = load_stronghold_map()
     join_keys = ["sorg", "sales_office", "sales_group"]
 
     n_before = len(df)
@@ -126,8 +127,8 @@ def enrich(df: pd.DataFrame) -> pd.DataFrame:
 # Paso E — Filtrar solo USA
 # =============================================================================
 def filter_usa(df: pd.DataFrame) -> pd.DataFrame:
-    """Filtra el dataset para conservar solo registros USA (US-ACM)."""
-    usa = df[df["stronghold"] == "US-ACM"].copy()
+    """Filtra el dataset para conservar solo registros USA."""
+    usa = df[df["stronghold"] == USA_STRONGHOLD].copy()
     n_excluded = len(df) - len(usa)
     print(f"  USA: {len(usa)} registros ({n_excluded} no-USA excluidos)")
     return usa
@@ -154,6 +155,7 @@ def engineer_targets(df: pd.DataFrame) -> pd.DataFrame:
 # =============================================================================
 def process_in_batches(df: pd.DataFrame, batch_size: int) -> pd.DataFrame:
     """Aplica los pasos B, C, D en batches para controlar uso de memoria."""
+    stronghold_map = load_stronghold_map()
     n_batches = math.ceil(len(df) / batch_size)
     print(f"  Procesando {len(df)} filas en {n_batches} batch(es) "
           f"de {batch_size} filas")
@@ -167,7 +169,7 @@ def process_in_batches(df: pd.DataFrame, batch_size: int) -> pd.DataFrame:
 
         batch = validate(batch)
         batch = clean(batch)
-        batch = enrich(batch)
+        batch = enrich(batch, stronghold_map)
         processed.append(batch)
 
     result = pd.concat(processed, ignore_index=True)
@@ -179,6 +181,8 @@ def process_in_batches(df: pd.DataFrame, batch_size: int) -> pd.DataFrame:
 # Ejecución: Pasos A → F
 # =============================================================================
 def run():
+    import os
+
     print("\n[A] Carga y unificación de datos")
     df = load_and_merge_sources(DATA_FOLDER, SOURCE_SHEET)
 
@@ -192,7 +196,7 @@ def run():
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
     df = engineer_targets(df)
     output_path = os.path.join(OUTPUT_FOLDER, "dataset_USA.csv")
-    df.to_csv(output_path, index=False)
+    df.to_csv(output_path, index=False, sep=",")
     print(f"  USA: {df.shape} → {output_path}")
     print(f"    Columnas: {list(df.columns)}")
 

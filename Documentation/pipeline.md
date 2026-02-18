@@ -1,6 +1,6 @@
 flowchart TD
 
-    A[Raw Data<br/>SAP Credit & Debit Memos<br/>(2023–2025)<br/>Nivel transaccional] --> B[Data Validation]
+    A[Raw Data<br/>SAP Credit & Debit Memos<br/>(2020–2025)<br/>Nivel transaccional] --> B[Data Validation]
 
     B --> B1[Schema checks<br/>Tipos esperados por columna]
     B --> B2[Rangos válidos<br/>Net value >= 0 · Fechas dentro de rango]
@@ -10,40 +10,26 @@ flowchart TD
 
     C --> C1[Drop columnas prohibidas<br/>Sales doc.<br/>Assignment<br/>Original Billing doc<br/>Document]
     C --> C2[Type casting<br/>Fechas / Numéricos]
-    C --> C3[Validación moneda<br/>USD / CAD]
-    C --> C4[Outlier treatment<br/>Log-transform o Winsorize<br/>en Net value]
+    C --> C3[Outlier treatment<br/>Log-transform o Winsorize<br/>en Net value]
 
     C --> D[Dimensional Enrichment]
 
-    D --> D1[Join SOrg → Region]
-    D --> D2[Map Dv → Division<br/>Agregados / Asfalto / Concreto / Cemento]
+    D --> D1[Merge SOrg+SOff+SGrp → Region + Stronghold]
+    D --> D2[Map Dv → Division<br/>Agregados / Asfalto / Concreto]
     D --> D3[Definir customer_id<br/>(Sold-to pt)]
-    D --> D4[Sold-to party<br/>Solo metadata]
 
-    D --> E[Split por País]
+    D --> E[Filter USA<br/>Stronghold = US-ACM]
 
-    E --> E1[USA Dataset - USD]
-    E --> E2[CAM Dataset - CAD]
+    E --> F[Target Engineering]
 
-    %% PIPELINE PARAMETRIZADO (misma clase, distinta config)
-    %% Se ejecuta 1 instancia por país × target = 4 ejecuciones
-    %% USA credit · USA debit · CAM credit · CAM debit
-
-    E1 --> F1[Target Engineering USA]
-    E2 --> F2[Target Engineering CAM]
-
-    F1 --> F1a[credit_net_value]
-    F1 --> F1b[debit_net_value]
-    F2 --> F2a[credit_net_value]
-    F2 --> F2b[debit_net_value]
+    F --> F1[credit_net_value]
+    F --> F2[debit_net_value]
 
     %% Cada target entra al pipeline parametrizado de forma independiente
-    F1a --> G1[MemoPipeline<br/>USA · Credit]
-    F1b --> G2[MemoPipeline<br/>USA · Debit]
-    F2a --> G3[MemoPipeline<br/>CAM · Credit]
-    F2b --> G4[MemoPipeline<br/>CAM · Debit]
+    F1 --> G1[MemoPipeline<br/>USA · Credit]
+    F2 --> G2[MemoPipeline<br/>USA · Debit]
 
-    %% PIPELINE GENÉRICO (se describe una vez, se ejecuta 4 veces)
+    %% PIPELINE GENÉRICO (se describe una vez, se ejecuta 2 veces)
     subgraph Pipeline Parametrizado
         direction TD
 
@@ -69,7 +55,7 @@ flowchart TD
 
         K5 --> L[Experiment Tracking<br/>Registro de hiperparámetros<br/>métricas y artefactos]
 
-        L --> M[Modelo Ganador<br/>por país × target]
+        L --> M[Modelo Ganador<br/>por target]
 
         M --> N[Hold-out Temporal<br/>Evaluación Final<br/>Se evalúa una sola vez]
 
@@ -80,8 +66,6 @@ flowchart TD
 
     G1 --> H
     G2 --> H
-    G3 --> H
-    G4 --> H
 
     %% OUTPUT
     P --> Q[Post-processing & Reporting]

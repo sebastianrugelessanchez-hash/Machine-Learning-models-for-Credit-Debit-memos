@@ -8,7 +8,15 @@ import pandas as pd
 # Rutas
 # -----------------------------------------------------------------------------
 DATA_FOLDER = os.path.join(os.path.dirname(__file__), "..", "Data bases")
+OUTPUT_FOLDER = os.path.join(os.path.dirname(__file__), "..", "output")
 STRONGHOLD_FILE = os.path.join(DATA_FOLDER, "Stronghold info.xlsx")
+
+# -----------------------------------------------------------------------------
+# Pipeline settings
+# -----------------------------------------------------------------------------
+SOURCE_SHEET = "Reference"
+BATCH_SIZE = 20_000
+USA_STRONGHOLD = "US-ACM"
 
 # -----------------------------------------------------------------------------
 # Mapeo de columnas del archivo fuente → nombre interno
@@ -22,6 +30,11 @@ COLUMN_MAP = {
     "Sold-to pt": "customer_id",  # ID del cliente
     "SD value": "net_value",   # Monto neto del memo
     "Created on": "created_on",  # Fecha de creación
+}
+
+# Alias de columna para archivos legacy (2020-2022)
+LEGACY_COLUMN_ALIASES = {
+    "SD Net value": "SD value",
 }
 
 # -----------------------------------------------------------------------------
@@ -45,7 +58,7 @@ DIVISION_MAP = {
 }
 
 # -----------------------------------------------------------------------------
-# Stronghold mapping (reemplaza REGION_RULES)
+# Stronghold mapping
 # Llave: Sales Org. + Sales Office + Sales Group
 # Trae: Region y Stronghold
 # -----------------------------------------------------------------------------

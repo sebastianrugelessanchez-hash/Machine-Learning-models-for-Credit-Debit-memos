@@ -2,13 +2,12 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from config import OUTPUT_FOLDER
 
 # =============================================================================
 # Configuración
 # =============================================================================
-OUTPUT_FOLDER = os.path.join(os.path.dirname(__file__), "..", "output")
 PLOTS_FOLDER = os.path.join(OUTPUT_FOLDER, "plots")
-os.makedirs(PLOTS_FOLDER, exist_ok=True)
 
 sns.set_theme(style="whitegrid", palette="muted")
 TARGETS = ["credit_net_value", "debit_net_value"]
@@ -170,6 +169,7 @@ def plot_boxplots(df: pd.DataFrame, country: str):
 # Ejecución
 # =============================================================================
 def run():
+    os.makedirs(PLOTS_FOLDER, exist_ok=True)
     country = "USA"
     print(f"\n{'='*60}")
     print(f"  ANÁLISIS DE OUTLIERS — {country}")

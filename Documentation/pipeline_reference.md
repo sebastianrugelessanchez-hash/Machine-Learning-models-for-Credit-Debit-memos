@@ -5,8 +5,8 @@
 | **A** | Raw Data |
 | **B** | Data Validation |
 | **C** | Data Cleaning & Normalization |
-| **D** | Dimensional Enrichment |
-| **E** | Split por País |
+| **D** | Dimensional Enrichment (Stronghold + Division) |
+| **E** | Filter USA (US-ACM) |
 | **F** | Target Engineering |
 | **G** | MemoPipeline (entrada) |
 | **H** | Monthly Aggregation |
